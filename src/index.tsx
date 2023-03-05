@@ -5,13 +5,13 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Desc from './containers/Desc';
+import Bird from './containers/Bird';
 import './index.css';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Desc />,
+    element: <Bird />,
   },
 ]);
 
