@@ -4,7 +4,7 @@ import * as echarts from 'echarts';
 const birdPNG = `image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAC4ElEQVRoBdXBIa7iQBjA8f93BlBYPHpU5QRRV0GaKi6whgOQJgSH2QugSIMoqoKMrJpLbLIKxxV2tt+qisJr33sr5vcTIidEToicEDkhckLkhMgJkRMiJ0ROiJwQOSFywjfJjA1MUHsnfAPhm2TGBiaovRO+gfBJmbGBnupsGZJvHapqG/ryJEXV3glfIHxSZmygpzpbhuRbh6rahr48SVG1d8IXCBNlxgY61dnS9+d3RV9RzlBV2/BOnqSo2jvhE4SJMmMDneps6fvzu6KvKGeoqm14J09SVO2d8AnCBzJjA29c9k+GFOUMdbgdUcv5ir48SVFV26DyJEXV3gkTCB/IjA28cdk/GVKUM9ThdkQt5yv68iRFVW2DypMUVXsnTCC8kBkb6FRtwzt5kqIu+yd9RTlDHW5H1HK+oi9PUlTVNqg8SVG1d8IEwguZsYFO1Ta8kycp6rJ/0leUM9ThdkQt5yv68iRFVW2DypMUVXsnTCC8kBkb6FRtwxh5kqIu+yd9RTlDHW5H1HK+YkiepKjaO2EC4YXM2ECnahvGyJMUddk/6SvKGepwO6KW8xVD8iRF1d4JEwgvZMYGOtXZ8s/yB4N+/UTlW4e67J8MKcoZU9TeCSMIL2TGBjrV2fLP8geDfv1E5VuHuuyfDCnKGVPU3gkjCB/IjA10qrNlSL51qMv+yZCinKGuOKbYYFG1d8IbwgcyYwOd6mwZkm8d6rJ/MqQoZ6grjik2WFTtnfCGMFJmbGDAaf1gyO6+QF1xqA2WKWrvhBGEkTJjAwNO6wdDdvcF6opDbbBMUXsnjCCMlBkb6JzWD6bY3ReoK44xNlhU7Z0wgjBSZmygc1o/mGJ3X6CuOMbYYFG1d8IIwkSZsYGe0/rBGLv7gjFq74QJhIkyYwM9p/WDMXb3BWPU3gkTCF+UGRsYofZO+A+EL8qMDYxQeyf8B0LkhMgJkRMiJ0ROiJwQOSFyQuSEyAmR+wu9EfIx3PgeXQAAAABJRU5ErkJggg==`;
 
 // 生成障碍物数据
-function getObstacleData(): number[][] {
+export function getObstacleData(): number[][] {
     // 添加minHeight防止空隙太小
     const minHeight = 20;
     const start = 150;
@@ -26,7 +26,7 @@ function getObstacleData(): number[][] {
 }
 
 // 生成option
-export function getOption(): echarts.EChartsOption {
+export function getOption(obstacleData: number[][]): echarts.EChartsOption {
     return {
         xAxis: { show: false, type: 'value', min: 0, max: 200, },
         yAxis: { show: false, min: 0, max: 100 },
@@ -44,7 +44,7 @@ export function getOption(): echarts.EChartsOption {
             {
                 name: '障碍物',
                 type: 'custom',
-                data: [...getObstacleData()],
+                data: obstacleData,
                 itemStyle: {
                     color: {
                         type: 'linear',
@@ -154,3 +154,34 @@ export function getOption(): echarts.EChartsOption {
         ]
     }
 }
+
+// 碰撞检测
+export function judgeCollision(centerCoord: number[], obstacleData: number[][]) {
+    if (centerCoord[1] < 0 || centerCoord[1] > 100) {
+        return -1;
+    }
+
+    const coordList = [
+        [centerCoord[0] + 15, centerCoord[1] + 1.5],
+        [centerCoord[0] + 15, centerCoord[1] - 1.5],
+    ]
+
+    let score = 0;
+
+    for (let i = 0; i < 2; i++) {
+        const coord = coordList[i];
+        const index = coord[0] / 50;
+        if (index % 1 < 0.6 && obstacleData[Math.floor(index) - 3]) {
+            if (obstacleData[Math.floor(index) - 3][1] > coord[1] || obstacleData[Math.floor(index) - 3][2] < coord[1]) {
+                return -1;
+            }
+            score = (Math.floor(index) - 2) * 2;
+        }
+    }
+
+    return score;
+}
+
+
+export const speed = 0.05;
+export const vw = 0.5;
