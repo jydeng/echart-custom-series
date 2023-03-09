@@ -4,6 +4,7 @@
 process.env.BABEL_ENV = 'production';
 process.env.NODE_ENV = 'production';
 process.env.PUBLIC_URL = '.'
+process.env.BUILD_PATH = 'docs'
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
