@@ -8,7 +8,7 @@ import "./style.css";
 const Bird = () => {
   const echartsInstance = useRef<echarts.ECharts>();
   // 障碍物数据
-  const obstacleData = useRef(getObstacleData());
+  const obstacleData = useRef<number[][]>(getObstacleData());
   // echarts配置
   const option = useRef(getOption(obstacleData.current));
   // 设置加速度
@@ -18,12 +18,12 @@ const Bird = () => {
   // 最终成绩
   const score = useRef(0);
 
-  // 主进程
+  // 游戏主进程
   const timer = useRef<number>();
   const initAnimation = () => {
     echartsInstance.current?.clear();
     timer.current = window.setInterval(() => {
-      // 鸟的位置和仰角调整
+      // 鸟的位置和仰角调整，给一个自动下坠的力、方向
       vh.current -= speed;
       // @ts-ignore
       option.current.series[0].data[0][1] += vh.current;
@@ -35,7 +35,7 @@ const Bird = () => {
         ? // @ts-ignore
           option.current.series[0].symbolRotate - 5
         : 0;
-      // 坐标系范围调整
+      // 坐标系范围调整，场景不断前移
       // @ts-ignore
       option.current.xAxis.min += vw;
       // @ts-ignore
@@ -49,7 +49,6 @@ const Bird = () => {
         obstacleData.current,
         (_score) => (score.current = _score)
       );
-      // -1 表示失败，其他表示成绩
       if (result) {
         onEndGame();
       }
@@ -72,16 +71,20 @@ const Bird = () => {
   // 结束游戏
   const onEndGame = () => {
     setIsRunning(false);
+    // 绘制一帧失败
     // @ts-ignore
     option.current.series[0].symbolRotate = 180;
     echartsInstance.current?.setOption(option.current);
+    // 清空定时器&弹窗提示成绩
     timer.current && window.clearInterval(timer.current);
     message.success(`游戏结束，最终得分${score.current}`);
   };
 
+
   // 初始化场景，事件绑定，绘制第一帧
   useEffect(() => {
     const dom = document.querySelector(".canvas") as HTMLElement;
+    // 绑定空格按下事件
     const fn = function (e: any) {
       if (e.code === "Space") {
         vh.current += 1;
@@ -90,6 +93,7 @@ const Bird = () => {
       }
     };
 
+    // 初始化echarts
     if (dom) {
       echartsInstance.current = echarts.init(dom);
       echartsInstance.current?.setOption(option.current);
