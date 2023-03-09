@@ -6,6 +6,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Bird from './containers/Bird';
+import 'antd/dist/reset.css';
 import './index.css';
 
 const router = createBrowserRouter([
